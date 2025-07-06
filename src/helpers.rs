@@ -91,7 +91,7 @@ pub fn draw_info(frame: &mut Frame, settings: &crate::settings::Settings, cursor
     // Draw exit info and cursor coordinates
     macroquad::prelude::draw_text("Press [q] to exit", crate::SCREEN_WIDTH / crate::SCALING - 125.0, 13.0, 16.0, macroquad::color::WHITE);
     macroquad::prelude::draw_text(
-        &format!("X: {:.0} | Y: {:.0}", mouse_x, mouse_y) as &str,
+        &format!("X: {:.0} | Y: {:.0}", mouse_x.floor(), mouse_y.floor()) as &str,
         crate::SCREEN_WIDTH / crate::SCALING - 125.3,
         28.0,
         16.0,

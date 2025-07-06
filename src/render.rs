@@ -41,7 +41,7 @@ impl Frame<'_> {
     pub fn new(size_x: usize, size_y: usize) -> Self {
         Self {
             grid: vec![vec![None; size_y]; size_x],
-            grid_scaling: crate::SCALING * 8.0
+            grid_scaling: 16.0
         }
     }
 
