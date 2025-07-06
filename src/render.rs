@@ -1,6 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
 
+use macroquad::rand::ChooseRandom;
+
 use crate::{
     SCREEN_HEIGHT,
     elements::{Element, StateOfMatter},
@@ -43,9 +45,31 @@ impl<'a> Pixel<'a> {
         let (x, y) = position;
         let (_size_x, size_y) = grid_size;
 
-        if y + 1 < size_y && grid[x][y + 1].is_none() {
-            return (x, y + 1);
+        // TODO: Vertical velocity
+        if y + 1 < size_y {
+            if grid[x][y + 1].is_none() {
+                return (x, y + 1);
+            }
+            let random = get_random_plus_minus_one();
+            let a_x = ((x as i32) + random) as usize;
+            let b_x = ((x as i32) - random) as usize;
+
+            let a_side_free = a_x > 0 && a_x < grid_size.0 && grid[a_x][y+1].is_none();
+            let b_side_free = b_x > 0 && b_x < grid_size.0 && grid[b_x][y+1].is_none();
+
+            if a_side_free{
+                return (a_x, y+1)
+            }
+
+            if b_side_free {
+                return (b_x, y+1)
+            }
         }
+
+
+        // TODO: Horizontal velocity
+
+
         return (x, y);
     }
 }
@@ -77,6 +101,10 @@ impl Frame<'_> {
                         self.grid_scaling,
                         pixel_ref.element.color,
                     );
+
+                    // TODO: State of Matter specific behaviour
+
+                    // TODO: Element specific behaviour
                     new_grid[new_pos.0][new_pos.1] = Some(pixel.clone());
                 }
             }
@@ -89,4 +117,9 @@ impl Frame<'_> {
 #[inline]
 pub fn create_grid<'a>(width: usize, height: usize) -> Grid<'a> {
     vec![vec![None; height]; width]
+}
+
+pub fn get_random_plus_minus_one() -> i32 {
+    let nums = [1, -1];
+    *nums.choose().unwrap()
 }

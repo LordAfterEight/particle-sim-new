@@ -19,7 +19,7 @@ mod settings;
 static SCREEN_WIDTH: f32 = 1440.0;
 static SCREEN_HEIGHT: f32 = 810.0;
 static SCALING: f32 = 1.0;
-pub const GRID_SCALING: f32 = 8.0;
+pub const GRID_SCALING: f32 = 4.0;
 pub static mut PIXEL_AMOUNT: usize = 0;
 
 fn window_conf() -> Conf {
@@ -73,9 +73,9 @@ async fn main() {
             }
         }
 
+        grid.update(pos_x.floor(), pos_y.floor());
         helpers::draw_info(&mut grid, &mut settings, &mut cursor);
         helpers::handle_input(&mut grid, &mut settings);
-        grid.update(pos_x.floor(), pos_y.floor());
         next_frame().await;
     }
 }
