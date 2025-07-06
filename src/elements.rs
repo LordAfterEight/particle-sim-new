@@ -92,7 +92,7 @@ impl Elements {
         let sand = Element::new(     // TODO: Change this to 'Element' later and add lava 'SubElement'
             "Sand",
             macroquad::color::Color::new(0.8,0.8,0.6,1.0),
-            1.0,
+            0.1,
             smoke.clone(),
             StateOfMatter::Powder,
             u16::MAX

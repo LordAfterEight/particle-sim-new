@@ -35,7 +35,7 @@ pub fn draw_info(frame: &mut Frame, settings: &crate::settings::Settings, cursor
     // display grid if enabled
     match settings.display_grid {
         true => {
-            for x in 0..frame.grid.len() / frame.grid_scaling as usize {
+            for x in 0..frame.grid.len() as usize {
                 macroquad::prelude::draw_line(
                     x as f32 * frame.grid_scaling,
                     0.0,
@@ -46,7 +46,7 @@ pub fn draw_info(frame: &mut Frame, settings: &crate::settings::Settings, cursor
                 );
             }
 
-            for y in 0..frame.grid[0].len() / frame.grid_scaling as usize {
+            for y in 0..frame.grid[0].len() as usize {
                 macroquad::prelude::draw_line(
                     0.0,
                     y as f32 * frame.grid_scaling,
@@ -66,7 +66,7 @@ pub fn draw_info(frame: &mut Frame, settings: &crate::settings::Settings, cursor
         mouse_y.floor() * frame.grid_scaling,
         frame.grid_scaling,
         frame.grid_scaling,
-        macroquad::color::Color::new(0.5,0.5,0.5,0.5)
+        macroquad::color::Color::new(0.75,0.75,0.75,0.5)
     );
 
     // Draw FPS and particle counter
