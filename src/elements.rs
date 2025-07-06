@@ -8,7 +8,7 @@ pub enum StateOfMatter {
     Powder
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub struct Element {
     pub name: String,
     pub color: macroquad::color::Color,
@@ -30,13 +30,13 @@ pub struct SubElement {
 pub struct Elements {
     pub fire: Element,
     pub smoke: SubElement,
-    pub sand: SubElement,
-    pub metal: SubElement,
+    pub sand: Element,
+    pub metal: Element,
 }
 
 impl Element {
     pub fn new(
-        name: &str,
+        name: impl ToString,
         color: macroquad::color::Color,
         weight: f32,
         sub_element: SubElement,
@@ -56,7 +56,7 @@ impl Element {
 
 impl SubElement {
     pub fn new(
-        name: &str,
+        name: impl ToString,
         color: macroquad::color::Color,
         weight: f32,
         state: StateOfMatter,
@@ -83,23 +83,25 @@ impl Elements {
         );
         let fire = Element::new(
             "Fire",
-            macroquad::color::Color::new(1.0,0.75,0.0,0.9),
+            macroquad::color::Color::new(1.0,0.5,0.0,1.0),
             -0.25,
             smoke.clone(),
             StateOfMatter::Gas,
             30
         );
-        let sand = SubElement::new(     // TODO: Change this to 'Element' later and add lava 'SubElement'
+        let sand = Element::new(     // TODO: Change this to 'Element' later and add lava 'SubElement'
             "Sand",
             macroquad::color::Color::new(0.8,0.8,0.6,1.0),
             1.0,
-            StateOfMatter::Solid,
+            smoke.clone(),
+            StateOfMatter::Powder,
             u16::MAX
         );
-        let metal = SubElement::new(
+        let metal = Element::new(
             "Metal",
             macroquad::color::Color::new(0.5,0.5,0.6,1.0),
             0.0,
+            smoke.clone(),
             StateOfMatter::Solid,
             u16::MAX
         );

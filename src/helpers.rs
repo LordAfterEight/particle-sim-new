@@ -42,7 +42,7 @@ pub fn draw_info(frame: &mut Frame, settings: &crate::settings::Settings, cursor
                     x as f32 * frame.grid_scaling,
                     crate::SCREEN_HEIGHT,
                     1.0,
-                    macroquad::color::Color::new(0.1,0.1,0.1,0.5)
+                    macroquad::color::Color::new(0.05,0.05,0.05,0.5)
                 );
             }
 
@@ -53,7 +53,7 @@ pub fn draw_info(frame: &mut Frame, settings: &crate::settings::Settings, cursor
                     crate::SCREEN_WIDTH,
                     y as f32 * frame.grid_scaling,
                     1.0,
-                    macroquad::color::Color::new(0.1,0.1,0.1,0.5)
+                    macroquad::color::Color::new(0.05,0.05,0.05,0.5)
                 );
             }
         },
