@@ -1,62 +1,50 @@
 use crate::elements::Element;
-use crate::{SCREEN_WIDTH,SCREEN_HEIGHT};
 
-#[derive(Clone)]
-pub struct Pixel {
+#[derive(PartialEq, Clone)]
+pub struct Pixel<'a> {
     x: f32,
     y: f32,
     x_velocity: f32,
     y_velocity: f32,
-    element: Element,
+    element: &'a Element,
 }
 
-pub struct Frame {
-    pub grid: Vec<Vec<Option<Box<Pixel>>>>,
-    pub grid_scaling: u16,
+pub struct Frame<'a> {
+    pub grid: Vec<Vec<Option<Box<Pixel<'a>>>>>,
+    pub grid_scaling: f32,
 }
 
-pub struct Diagnostics {
-    pixel_amount: u64,
-    grid_size: usize,
-}
-
-impl Pixel {
-    pub fn new(x: f32, y: f32, x_vel: f32, y_vel: f32, elem: &Element) -> Self {
+impl <'a>Pixel<'a> {
+    pub fn new(x: f32, y: f32, x_vel: f32, y_vel: f32, elem: &'a Element) -> Self {
+        unsafe { crate::PIXEL_AMOUNT += 1; }
         Self {
             x,
             y,
             x_velocity: x_vel,
             y_velocity: y_vel,
-            element: elem.clone()
+            element: elem,
         }
     }
 
     pub fn update(&mut self) {
-        macroquad::prelude::draw_rectangle(self.x, self.y, 1.0, 1.0, self.element.color);
+        // TODO: Rendering
 
-        println!("{} at X: {} | Y: {}", self.element.name, self.x, self.y);
+        // TODO: Vertical velocity
 
-        self.y_velocity += self.element.weight;
+        // TODO: Horizontal velocity
 
-        self.y += self.y_velocity;
+        // TODO: Element-specific modulations
     }
 }
 
-impl Frame {
-    pub fn new() -> Self {
+impl Frame<'_> {
+    pub fn new(size_x: usize, size_y: usize) -> Self {
         Self {
-            grid: vec![vec![None; SCREEN_HEIGHT as usize]; SCREEN_WIDTH as usize],
-            grid_scaling: 1
+            grid: vec![vec![None; size_y]; size_x],
+            grid_scaling: crate::SCALING * 8.0
         }
     }
 
     pub fn update(&mut self) {
-        for pixelx in &mut self.grid {
-            for pixel in pixelx {
-                if let Some(pixel) = pixel {
-                    pixel.update();
-                }
-            }
-        }
     }
 }
