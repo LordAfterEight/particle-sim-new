@@ -62,8 +62,8 @@ pub fn draw_info(frame: &mut Frame, settings: &crate::settings::Settings, cursor
 
     // Draw cursor
     macroquad::prelude::draw_rectangle(
-        mouse_x * frame.grid_scaling - frame.grid_scaling / 2.0,
-        mouse_y * frame.grid_scaling - frame.grid_scaling / 2.0,
+        mouse_x.floor() * frame.grid_scaling,
+        mouse_y.floor() * frame.grid_scaling,
         frame.grid_scaling,
         frame.grid_scaling,
         macroquad::color::Color::new(0.5,0.5,0.5,0.5)
