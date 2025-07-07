@@ -21,7 +21,7 @@ mod settings;
 static SCREEN_WIDTH: f32 = 1440.0;
 static SCREEN_HEIGHT: f32 = 810.0;
 static SCALING: f32 = 1.0;
-pub const GRID_SCALING: f32 = 4.0;
+pub const GRID_SCALING: f32 = 8.0;
 pub static mut PIXEL_AMOUNT: usize = 0;
 
 
@@ -64,8 +64,6 @@ async fn main() {
             if grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] == None {
                 grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] =
                     Some(Rc::new(RefCell::new(Pixel::new(
-                        /*pos_x as f32 * grid.grid_scaling,
-                        pos_y as f32 * grid.grid_scaling,*/
                         0.0,
                         0.0,
                         &elements.sand,
@@ -77,8 +75,6 @@ async fn main() {
             if grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] == None {
                 grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] =
                     Some(Rc::new(RefCell::new(Pixel::new(
-                        /*pos_x as f32 * grid.grid_scaling,
-                        pos_y as f32 * grid.grid_scaling,*/
                         0.0,
                         0.0,
                         &elements.metal,
@@ -96,7 +92,7 @@ async fn main() {
         }
 
         grid.update();
-        helpers::draw_info(&mut grid, &mut settings, &mut cursor);
+        helpers::draw_info(&mut grid, &mut settings, &mut cursor, &elements);
         helpers::handle_input(&mut grid, &mut settings);
         next_frame().await;
     }
