@@ -44,15 +44,18 @@ impl<'a> Pixel<'a> {
         let (x, y) = position;
         let (_size_x, size_y) = grid_size;
         self.y_velocity = 1.0;
+        let random = get_random_plus_minus_one();
+        let return_x = random;
+        let random_x: i32 = x as i32 + random;
 
         // TODO: Vertical velocity
         if (y + self.y_velocity as usize) < size_y {
-            let random = get_random_plus_minus_one();
             let a_x = ((x as i32) + random) as usize;
             let b_x = ((x as i32) - random) as usize;
 
-            match self.element.state {
-                StateOfMatter::Powder => {
+
+            match self.element.state {          // State Of Matter specific behaviour
+                StateOfMatter::Powder => {          // --- Powder ---
                     if grid[x][y + self.y_velocity as usize].is_none() {
                         return (x, y + self.y_velocity as usize);
                     }
@@ -70,14 +73,38 @@ impl<'a> Pixel<'a> {
                     if b_side_free {
                         return (b_x, y + self.y_velocity as usize);
                     }
-                }
+                },
+                
+                StateOfMatter::Liquid => {          // --- Liquid ---
+                    if grid[x][y + self.y_velocity as usize].is_none() {
+                        return (x, y + self.y_velocity as usize);
+                    }
+
+
+                    match random {
+                        1  => if grid[x+1][y].is_none() {
+                            return (x+1, y);
+                        },
+                        -1 => if grid[x-1][y].is_none() {
+                            return (x-1, y);
+                        },
+                        0 => return (x, y),
+                        _ => return (x, y)
+                    }
+                },
                 _ => {}
             }
         }
 
-        // TODO: Horizontal velocity
-
-        return (x, y);
+        match &self.element.state {
+            StateOfMatter::Liquid => match random_x {
+                1  => return (x + 1, y),
+                -1 => return (x - 1, y),
+                0  => return (x,y),
+                _ => return (x, y)
+            }
+            _ => return (x,y)
+        }
     }
 }
 
@@ -90,7 +117,7 @@ impl Frame<'_> {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, settings: &crate::settings::Settings) {
         let mut new_grid = create_grid(self.grid_size.0, self.grid_size.1);
 
         for x in 0..self.grid_size.0 {
@@ -117,7 +144,9 @@ impl Frame<'_> {
             }
         }
 
-        self.grid = new_grid;
+        if settings.pause_state == false || macroquad::input::is_key_pressed(macroquad::input::KeyCode::F) {
+            self.grid = new_grid;
+        }
     }
 }
 
@@ -127,6 +156,6 @@ pub fn create_grid<'a>(width: usize, height: usize) -> Grid<'a> {
 }
 
 pub fn get_random_plus_minus_one() -> i32 {
-    let nums = [1, -1];
+    let nums = [1, 0, -1];
     *nums.choose().unwrap()
 }

@@ -32,6 +32,8 @@ pub struct Elements {
     pub smoke: SubElement,
     pub sand: Element,
     pub metal: Element,
+    pub water: Element,
+    pub steam: SubElement,
 }
 
 impl Element {
@@ -74,14 +76,15 @@ impl SubElement {
 
 impl Elements {
     pub fn init() -> Self {
-        let smoke = SubElement::new(
+        let smoke = SubElement::new(            // --- Smoke ---
             "Smoke",
             macroquad::color::Color::new(0.2,0.2,0.2,0.1),
             -0.01,
             StateOfMatter::Gas,
             30
         );
-        let fire = Element::new(
+
+        let fire = Element::new(            // --- Fire --- 
             "Fire",
             macroquad::color::Color::new(1.0,0.5,0.0,1.0),
             -0.25,
@@ -89,15 +92,17 @@ impl Elements {
             StateOfMatter::Gas,
             30
         );
-        let sand = Element::new(     // TODO: Change this to 'Element' later and add lava 'SubElement'
+
+        let sand = Element::new(     // TODO: Add lava 'SubElement' --- Sand ---
             "Sand",
             macroquad::color::Color::new(0.8,0.8,0.55,1.0),
-            0.1,
+            1.0,
             smoke.clone(),
             StateOfMatter::Powder,
             u16::MAX
         );
-        let metal = Element::new(
+
+        let metal = Element::new(           // --- Metal ---
             "Metal",
             macroquad::color::Color::new(0.5,0.5,0.6,1.0),
             0.0,
@@ -106,11 +111,30 @@ impl Elements {
             u16::MAX
         );
 
+        let steam = SubElement::new(           // --- Steam ---
+            "Steam",
+            macroquad::color::SKYBLUE,
+            -0.1,
+            StateOfMatter::Gas,
+            u16::MAX
+        );
+
+        let water = Element::new(           // --- Water ---
+            "Water",
+            macroquad::color::Color::new(0.1,0.1,0.9, 0.75),
+            1.0,
+            steam.clone(),
+            StateOfMatter::Liquid,
+            u16::MAX
+        );
+
         Self {
             fire,
             smoke,
             sand,
-            metal
+            metal,
+            water,
+            steam,
         }
     }
 }

@@ -5,7 +5,7 @@ use crate::render::Frame;
 pub fn handle_input(frame: &mut Frame, settings: &mut crate::settings::Settings) {
     let mut input = match macroquad::input::get_char_pressed() {
         Some(key) => key,
-        None => ' ',
+        None => '\n',
     };
 
     match input {
@@ -21,6 +21,10 @@ pub fn handle_input(frame: &mut Frame, settings: &mut crate::settings::Settings)
         'e' => match settings.display_elements {
             true => settings.display_elements = false,
             false => settings.display_elements = true,
+        },
+        ' ' => match settings.pause_state {
+            true => settings.pause_state = false,
+            false => settings.pause_state = true
         },
         _ => {}
     };
@@ -46,7 +50,7 @@ pub fn draw_info(
                     x as f32 * frame.grid_scaling * 3.0,
                     crate::SCREEN_HEIGHT,
                     1.0,
-                    macroquad::color::Color::new(0.05, 0.05, 0.05, 0.5),
+                    macroquad::color::Color::new(0.1, 0.1, 0.1, 0.5),
                 );
             }
 
@@ -57,7 +61,7 @@ pub fn draw_info(
                     crate::SCREEN_WIDTH,
                     y as f32 * frame.grid_scaling * 3.0,
                     1.0,
-                    macroquad::color::Color::new(0.05, 0.05, 0.05, 0.5),
+                    macroquad::color::Color::new(0.1, 0.1, 0.1, 0.5),
                 );
             }
         }
@@ -133,6 +137,20 @@ pub fn draw_info(
                 "[e] - Show elements",
                 crate::SCREEN_WIDTH / crate::SCALING - 136.0,
                 5.0 * settings.text_offset,
+                16.0,
+                macroquad::color::SKYBLUE,
+            );
+            draw_text(
+                "[space] - pause",
+                crate::SCREEN_WIDTH / crate::SCALING - 136.0,
+                6.0 * settings.text_offset,
+                16.0,
+                macroquad::color::SKYBLUE,
+            );
+            draw_text(
+                "[f] - single step",
+                crate::SCREEN_WIDTH / crate::SCALING - 136.0,
+                7.0 * settings.text_offset,
                 16.0,
                 macroquad::color::SKYBLUE,
             );

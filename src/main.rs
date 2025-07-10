@@ -36,7 +36,6 @@ fn window_conf() -> Conf {
         window_width: (SCREEN_WIDTH / SCALING) as i32,
         window_height: (SCREEN_HEIGHT / SCALING) as i32,
         window_resizable: false,
-        high_dpi: true,
         ..Default::default()
     }
 }
@@ -59,14 +58,26 @@ async fn main() {
         let (mut pos_x, mut pos_y) = cursor.position;
         pos_x /= grid.grid_scaling as f32;
         pos_y /= grid.grid_scaling as f32;
+        let shift_pressed = macroquad::input::is_key_down(macroquad::input::KeyCode::LeftShift);
 
-        if macroquad::input::is_mouse_button_down(macroquad::input::MouseButton::Left) {
+        if macroquad::input::is_mouse_button_down(macroquad::input::MouseButton::Left) && !shift_pressed {
             if grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] == None {
                 grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] =
                     Some(Rc::new(RefCell::new(Pixel::new(
                         0.0,
                         0.0,
                         &elements.sand,
+                    ))));
+            }
+        }
+        
+        if macroquad::input::is_mouse_button_down(macroquad::input::MouseButton::Left) && shift_pressed {
+            if grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] == None {
+                grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] =
+                    Some(Rc::new(RefCell::new(Pixel::new(
+                        0.0,
+                        0.0,
+                        &elements.water,
                     ))));
             }
         }
@@ -91,7 +102,7 @@ async fn main() {
             }
         }
 
-        grid.update();
+        grid.update(&settings);
         helpers::draw_info(&mut grid, &mut settings, &mut cursor, &elements);
         helpers::handle_input(&mut grid, &mut settings);
         next_frame().await;
