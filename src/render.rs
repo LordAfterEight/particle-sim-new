@@ -24,9 +24,7 @@ pub struct Frame<'a> {
 
 impl<'a> Pixel<'a> {
     pub fn new(x_vel: f32, y_vel: f32, elem: &'a Element) -> Self {
-        unsafe {
-            crate::PIXEL_AMOUNT += 1;
-        }
+        unsafe { crate::PIXEL_AMOUNT += 1; }
         Self {
             x_velocity: x_vel,
             y_velocity: y_vel,
@@ -37,16 +35,14 @@ impl<'a> Pixel<'a> {
     pub fn update(
         &mut self,
         grid: &Grid,
-        grid_scaling: f32,
         grid_size: (usize, usize),
         position: (usize, usize),
     ) -> (usize, usize) {
         let (x, y) = position;
         let (_size_x, size_y) = grid_size;
-        self.y_velocity = 1.0;
         let random = get_random_plus_minus_one();
-        let return_x = random;
         let random_x: i32 = x as i32 + random;
+        self.y_velocity += self.element.weight;
 
         // TODO: Vertical velocity
         if (y + self.y_velocity as usize) < size_y {
@@ -56,10 +52,10 @@ impl<'a> Pixel<'a> {
 
             match self.element.state {          // State Of Matter specific behaviour
                 StateOfMatter::Powder => {          // --- Powder ---
-                    if grid[x][y + self.y_velocity as usize].is_none() {
-                        return (x, y + self.y_velocity as usize);
-                    }
-                    let a_side_free = a_x > 0
+                    if true {
+                        return (x, y + get_furthest_distance(self.y_velocity, &grid, position) as usize);
+                    } else { self.y_velocity = 1.0; }
+                    /*let a_side_free = a_x > 0
                         && a_x < grid_size.0
                         && grid[a_x][y + self.y_velocity as usize].is_none();
                     let b_side_free = b_x > 0
@@ -72,7 +68,7 @@ impl<'a> Pixel<'a> {
 
                     if b_side_free {
                         return (b_x, y + self.y_velocity as usize);
-                    }
+                    }*/
                 },
                 
                 StateOfMatter::Liquid => {          // --- Liquid ---
@@ -124,8 +120,7 @@ impl Frame<'_> {
             for y in 0..self.grid_size.1 {
                 if let Some(pixel) = self.grid[x][y].as_ref().map(|p| p.clone()) {
                     let mut pixel_ref = pixel.borrow_mut();
-                    let new_pos =
-                        pixel_ref.update(&self.grid, self.grid_scaling, self.grid_size, (x, y));
+
 
                     // TODO: Rendering things
                     macroquad::shapes::draw_rectangle(
@@ -139,6 +134,10 @@ impl Frame<'_> {
                     // TODO: State of Matter specific behaviour
 
                     // TODO: Element specific behaviour
+
+                    // --- Create a new Grid ---
+                    let new_pos =
+                        pixel_ref.update(&self.grid, self.grid_size, (x, y));
                     new_grid[new_pos.0][new_pos.1] = Some(pixel.clone());
                 }
             }
@@ -158,4 +157,18 @@ pub fn create_grid<'a>(width: usize, height: usize) -> Grid<'a> {
 pub fn get_random_plus_minus_one() -> i32 {
     let nums = [1, 0, -1];
     *nums.choose().unwrap()
+}
+
+pub fn get_furthest_distance(velocity: f32, grid: &Grid, position: (usize,usize)) -> f32 {
+    println!("\nMeasuring distance...");
+    let mut distance = velocity as u8;
+
+    for y in 0..distance {
+        println!("Looking {} pixels far", y);
+        if grid[position.0][position.1 + y as usize] == None {
+            println!("No particle in the way");
+        }
+    }
+
+    return velocity;
 }

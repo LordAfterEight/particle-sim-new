@@ -3,13 +3,13 @@ use macroquad::text::draw_text;
 use crate::render::Frame;
 
 pub fn handle_input(frame: &mut Frame, settings: &mut crate::settings::Settings) {
-    let mut input = match macroquad::input::get_char_pressed() {
+    let input = match macroquad::input::get_char_pressed() {
         Some(key) => key,
         None => '\n',
     };
 
     match input {
-        'q' => std::process::exit(1),
+        'q' => std::process::exit(0),
         'g' => match settings.display_grid {
             true => settings.display_grid = false,
             false => settings.display_grid = true,
@@ -39,6 +39,7 @@ pub fn draw_info(
     let (mut mouse_x, mut mouse_y) = cursor.position;
     mouse_x /= frame.grid_scaling as f32;
     mouse_y /= frame.grid_scaling as f32;
+    if mouse_y >= crate::SCREEN_HEIGHT { mouse_y = crate::SCREEN_HEIGHT - frame.grid_scaling; }
 
     // display grid if enabled
     match settings.display_grid {

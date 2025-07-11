@@ -44,24 +44,27 @@ fn window_conf() -> Conf {
 async fn main() {
     let mut grid = render::Frame::new(
         (SCREEN_WIDTH as f32 / GRID_SCALING) as usize,
-        ((SCREEN_HEIGHT as f32 / GRID_SCALING)+1.0) as usize,
+        ((SCREEN_HEIGHT as f32 / GRID_SCALING)) as usize,
         GRID_SCALING
     );
     println!("X: {} | Y: {}", grid.grid_size.0, grid.grid_size.1);
     let mut elements = Elements::init();
     let mut settings = settings::Settings::default();
     let mut cursor = cursor::Cursor::init();
+    let mut pixels = grid.grid.clone();
     show_mouse(false);
 
     loop {
         cursor.update();
         let (mut pos_x, mut pos_y) = cursor.position;
+        if pos_y >= SCREEN_HEIGHT { pos_y = SCREEN_HEIGHT - grid.grid_scaling as f32; }
         pos_x /= grid.grid_scaling as f32;
         pos_y /= grid.grid_scaling as f32;
+
         let shift_pressed = macroquad::input::is_key_down(macroquad::input::KeyCode::LeftShift);
 
-        if macroquad::input::is_mouse_button_down(macroquad::input::MouseButton::Left) && !shift_pressed {
-            if grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] == None {
+        if macroquad::input::is_mouse_button_pressed(macroquad::input::MouseButton::Left) && !shift_pressed {
+            if pos_y.floor() < SCREEN_HEIGHT && grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] == None {
                 grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] =
                     Some(Rc::new(RefCell::new(Pixel::new(
                         0.0,
