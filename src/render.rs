@@ -2,65 +2,114 @@ use std::{cell::RefCell, rc::Rc};
 
 use macroquad::rand::ChooseRandom;
 
-use crate::{
-    SCREEN_HEIGHT,
-    elements::{Element, StateOfMatter},
-};
+use crate::elements::{Element, StateOfMatter};
 
-type Grid<'a> = Vec<Vec<Option<Rc<RefCell<Pixel<'a>>>>>>;
+type Grid = Vec<Vec<Option<Rc<RefCell<Pixel>>>>>;
 
 #[derive(PartialEq, Clone)]
-pub struct Pixel<'a> {
+pub struct Pixel {
     x_velocity: f32,
     y_velocity: f32,
-    element: &'a Element,
+    element: Box<Element>,
 }
 
-pub struct Frame<'a> {
-    pub grid: Grid<'a>,
+pub struct Frame {
+    pub grid: Grid,
     pub grid_scaling: f32,
     pub grid_size: (usize, usize),
 }
 
-impl<'a> Pixel<'a> {
-    pub fn new(x_vel: f32, y_vel: f32, elem: &'a Element) -> Self {
+impl Pixel {
+    pub fn new(x_vel: f32, y_vel: f32, elem: Element) -> Self {
         unsafe { crate::PIXEL_AMOUNT += 1; }
         Self {
             x_velocity: x_vel,
             y_velocity: y_vel,
-            element: elem,
+            element: Box::new(elem),
         }
     }
 
     pub fn update(
         &mut self,
-        grid: &Grid,
+        grid: &mut Grid,
         grid_size: (usize, usize),
         position: (usize, usize),
     ) -> (usize, usize) {
         let (x, y) = position;
-        let (_size_x, size_y) = grid_size;
+        let (size_x, size_y) = grid_size;
         let random = get_random_plus_minus_one();
         let random_x: i32 = x as i32 + random;
-        self.y_velocity += self.element.weight;
+        self.y_velocity = self.element.weight;
+                    
+        if self.element.lifetime < u16::MAX {
+            self.element.lifetime -= get_random_one_or_zero();
+        }
 
+        if self.element.lifetime == 0 && self.element.sub_element.is_some() {
+            self.element = self.element.sub_element.clone().unwrap();
+        }
+        
         // TODO: Vertical velocity
         if (y + self.y_velocity as usize) < size_y {
             let a_x = ((x as i32) + random) as usize;
             let b_x = ((x as i32) - random) as usize;
 
+            match x as f32 {
+                crate::SCREEN_WIDTH => grid[x][y] = None,
+                0.0                 => grid[x][y] = None,
+                _                   => {}
+            }
+            
+            match y as f32 {
+                crate::SCREEN_HEIGHT => grid[x][y] = None,
+                1.0                  => {
+                    grid[x][y] = None;
+                    unsafe { crate::PIXEL_AMOUNT -= 1; }
+                },
+                _                    => {}
+            }
+
+            if let Some(pixel_rc_refcell) = &grid[x][(y as f32 - self.y_velocity) as usize] {
+                let pixel_borrowed = pixel_rc_refcell.borrow(); // Borrow the pixel to access its fields
+                let checked_element_name = &pixel_borrowed.element.name;
+                let checked_element_state = &pixel_borrowed.element.state;
+
+                // Now you can use checked_element_name or checked_element_state
+                // For example:
+                // if checked_element_name == "Water" {
+                //     // Do something if the pixel below is water
+                // }
+                // if *checked_element_state == StateOfMatter::Solid {
+                //    // Do something if the pixel below is solid
+                // }
+                
+                if checked_element_name == "Fire" && self.element.name == "Water" {
+                    self.element = self.element.sub_element.clone().unwrap();
+                }
+
+                if checked_element_name == "Sand" && self.element.name == "Water" {
+                    for i in 0..100 {
+                        if grid[x][y - i].is_none() {
+                            return(x, y - i -1);
+                        }
+                    }
+                }
+            }
+
 
             match self.element.state {          // State Of Matter specific behaviour
                 StateOfMatter::Powder => {          // --- Powder ---
-                    if true {
-                        return (x, y + get_furthest_distance(self.y_velocity, &grid, position) as usize);
+                    if grid[position.0][position.1 + self.y_velocity as usize].is_none() {
+                        return (x, y + self.y_velocity as usize);
                     } else { self.y_velocity = 1.0; }
-                    /*let a_side_free = a_x > 0
+                    let a_side_free = a_x > 0
                         && a_x < grid_size.0
                         && grid[a_x][y + self.y_velocity as usize].is_none();
+                        && grid[x + 1][y].is_none();
                     let b_side_free = b_x > 0
                         && b_x < grid_size.0
                         && grid[b_x][y + self.y_velocity as usize].is_none();
+                        && grid[x - 1][y].is_none();
 
                     if a_side_free {
                         return (a_x, y + self.y_velocity as usize);
@@ -68,43 +117,51 @@ impl<'a> Pixel<'a> {
 
                     if b_side_free {
                         return (b_x, y + self.y_velocity as usize);
-                    }*/
+                    }
                 },
                 
                 StateOfMatter::Liquid => {          // --- Liquid ---
                     if grid[x][y + self.y_velocity as usize].is_none() {
                         return (x, y + self.y_velocity as usize);
                     }
+                },
 
+                StateOfMatter::Gas => {          // --- Gas ---
+                    if grid[x][(y as f32 + self.y_velocity) as usize].is_none() {
+                        let (mut ret_x, ret_y) = (x,y);
+                        match random {
+                            1  => if  (x + 1) < size_x && grid[x+1][y].is_none() {
+                                ret_x+=1;
+                            },
+                            -1 => if (x - 1) > 0 && grid[x-1][y].is_none() {
+                                ret_x-=1;
+                            },
+                            _ => {}
+                        }
+                        return (ret_x, (y as f32 + self.y_velocity) as usize);
+                    }
 
                     match random {
-                        1  => if grid[x+1][y].is_none() {
+                        1  => if  (x + 1) < size_x && grid[x+1][y].is_none() {
                             return (x+1, y);
                         },
-                        -1 => if grid[x-1][y].is_none() {
+                        -1 => if (x - 1) > 0 && grid[x-1][y].is_none() {
                             return (x-1, y);
                         },
                         0 => return (x, y),
                         _ => return (x, y)
                     }
+
+
                 },
                 _ => {}
             }
         }
-
-        match &self.element.state {
-            StateOfMatter::Liquid => match random_x {
-                1  => return (x + 1, y),
-                -1 => return (x - 1, y),
-                0  => return (x,y),
-                _ => return (x, y)
-            }
-            _ => return (x,y)
-        }
+        return (x,y)
     }
 }
 
-impl Frame<'_> {
+impl Frame {
     pub fn new(size_x: usize, size_y: usize, scaling: f32) -> Self {
         Self {
             grid: create_grid(size_x, size_y),
@@ -137,7 +194,7 @@ impl Frame<'_> {
 
                     // --- Create a new Grid ---
                     let new_pos =
-                        pixel_ref.update(&self.grid, self.grid_size, (x, y));
+                        pixel_ref.update(&mut self.grid, self.grid_size, (x, y));
                     new_grid[new_pos.0][new_pos.1] = Some(pixel.clone());
                 }
             }
@@ -150,7 +207,7 @@ impl Frame<'_> {
 }
 
 #[inline]
-pub fn create_grid<'a>(width: usize, height: usize) -> Grid<'a> {
+pub fn create_grid(width: usize, height: usize) -> Grid {
     vec![vec![None; height]; width]
 }
 
@@ -159,16 +216,7 @@ pub fn get_random_plus_minus_one() -> i32 {
     *nums.choose().unwrap()
 }
 
-pub fn get_furthest_distance(velocity: f32, grid: &Grid, position: (usize,usize)) -> f32 {
-    println!("\nMeasuring distance...");
-    let mut distance = velocity as u8;
-
-    for y in 0..distance {
-        println!("Looking {} pixels far", y);
-        if grid[position.0][position.1 + y as usize] == None {
-            println!("No particle in the way");
-        }
-    }
-
-    return velocity;
+pub fn get_random_one_or_zero() -> u16 {
+    let nums = [1, 0];
+    *nums.choose().unwrap()
 }

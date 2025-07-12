@@ -2,7 +2,8 @@ use macroquad::text::draw_text;
 
 use crate::render::Frame;
 
-pub fn handle_input(frame: &mut Frame, settings: &mut crate::settings::Settings) {
+pub fn handle_input(frame: &mut Frame, settings: &mut crate::settings::Settings, cursor: &mut crate::cursor::Cursor) {
+    let (_wheel_x, wheel_y) = macroquad::input::mouse_wheel();
     let input = match macroquad::input::get_char_pressed() {
         Some(key) => key,
         None => '\n',
@@ -28,6 +29,27 @@ pub fn handle_input(frame: &mut Frame, settings: &mut crate::settings::Settings)
         },
         _ => {}
     };
+
+    match wheel_y {
+        120.0  => {
+            cursor.size_modifier += 1.0;
+            if cursor.size_modifier as u16 % 2 == 0 {
+                cursor.size_modifier += 1.0;
+            }
+        },
+        -120.0 => {
+            cursor.size_modifier -= 1.0;
+            if cursor.size_modifier as u16 % 2 == 0 {
+                cursor.size_modifier -= 1.0;
+            }
+        },
+        _ => {}
+    }
+
+    if cursor.size_modifier < 1.0 {
+        cursor.size_modifier = 1.0;
+    }
+
 }
 
 pub fn draw_info(
@@ -37,8 +59,8 @@ pub fn draw_info(
     elements: &crate::elements::Elements,
 ) {
     let (mut mouse_x, mut mouse_y) = cursor.position;
-    mouse_x /= frame.grid_scaling as f32;
-    mouse_y /= frame.grid_scaling as f32;
+    let cursor_x = mouse_x / frame.grid_scaling as f32;
+    let cursor_y = mouse_y / frame.grid_scaling as f32;
     if mouse_y >= crate::SCREEN_HEIGHT { mouse_y = crate::SCREEN_HEIGHT - frame.grid_scaling; }
 
     // display grid if enabled
@@ -51,7 +73,7 @@ pub fn draw_info(
                     x as f32 * frame.grid_scaling * 3.0,
                     crate::SCREEN_HEIGHT,
                     1.0,
-                    macroquad::color::Color::new(0.1, 0.1, 0.1, 0.5),
+                    macroquad::color::Color::new(0.2, 0.2, 0.2, 0.5),
                 );
             }
 
@@ -62,7 +84,7 @@ pub fn draw_info(
                     crate::SCREEN_WIDTH,
                     y as f32 * frame.grid_scaling * 3.0,
                     1.0,
-                    macroquad::color::Color::new(0.1, 0.1, 0.1, 0.5),
+                    macroquad::color::Color::new(0.2, 0.2, 0.2, 0.5),
                 );
             }
         }
@@ -71,11 +93,11 @@ pub fn draw_info(
 
     // Draw cursor
     macroquad::prelude::draw_rectangle(
-        mouse_x.floor() * frame.grid_scaling,
-        mouse_y.floor() * frame.grid_scaling,
-        frame.grid_scaling,
-        frame.grid_scaling,
-        macroquad::color::Color::new(0.75, 0.75, 0.75, 0.5),
+        cursor_x.floor() * frame.grid_scaling - (cursor.size_modifier / 2.0 - 0.5) * frame.grid_scaling,
+        cursor_y.floor() * frame.grid_scaling - (cursor.size_modifier / 2.0 - 0.5) * frame.grid_scaling,
+        frame.grid_scaling * cursor.size_modifier,
+        frame.grid_scaling * cursor.size_modifier,
+        macroquad::color::Color::new(0.75, 0.75, 0.75, 0.75),
     );
 
     // Draw FPS and particle counter
@@ -167,6 +189,10 @@ pub fn draw_info(
         }
     }
 
+    // Show element selection window
+    if (mouse_x > 10.0) && (mouse_x < 750.0) && (mouse_y > crate::SCREEN_HEIGHT / 2.0 - 250.0) && (mouse_y < crate::SCREEN_HEIGHT / 2.0 + 250.0) && settings.display_elements {
+        macroquad::input::show_mouse(true);
+    } else { macroquad::input::show_mouse(false); }
     match settings.display_elements {
         true => {
             macroquad::shapes::draw_rectangle(
@@ -174,7 +200,7 @@ pub fn draw_info(
                 crate::SCREEN_HEIGHT / 2.0 - 250.0,
                 750.0,
                 500.0,
-                macroquad::color::Color::new(0.1, 0.1, 0.1, 0.8),
+                macroquad::color::Color::new(0.1, 0.1, 0.1, 0.9),
             );
             draw_text(
                 "Elements",

@@ -6,8 +6,8 @@ use std::rc::Rc;
 
 use macroquad::input::show_mouse;
 use macroquad::prelude::Conf;
-use macroquad::rand::gen_range;
 use macroquad::window::next_frame;
+use macroquad::rand::gen_range;
 
 use crate::elements::Elements;
 use crate::render::Pixel;
@@ -18,17 +18,11 @@ mod helpers;
 mod render;
 mod settings;
 
-static SCREEN_WIDTH: f32 = 1440.0;
-static SCREEN_HEIGHT: f32 = 810.0;
+const SCREEN_WIDTH: f32 = 1440.0;
+const SCREEN_HEIGHT: f32 = 810.0;
 static SCALING: f32 = 1.0;
-pub const GRID_SCALING: f32 = 8.0;
+pub const GRID_SCALING: f32 = 2.0;
 pub static mut PIXEL_AMOUNT: usize = 0;
-
-
-enum SelectedElement {
-
-}
-
 
 fn window_conf() -> Conf {
     Conf {
@@ -51,7 +45,7 @@ async fn main() {
     let mut elements = Elements::init();
     let mut settings = settings::Settings::default();
     let mut cursor = cursor::Cursor::init();
-    let mut pixels = grid.grid.clone();
+    let pixels = grid.grid.clone();
     show_mouse(false);
 
     loop {
@@ -63,51 +57,70 @@ async fn main() {
 
         let shift_pressed = macroquad::input::is_key_down(macroquad::input::KeyCode::LeftShift);
 
-        if macroquad::input::is_mouse_button_pressed(macroquad::input::MouseButton::Left) && !shift_pressed {
-            if pos_y.floor() < SCREEN_HEIGHT && grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] == None {
-                grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] =
-                    Some(Rc::new(RefCell::new(Pixel::new(
+        if macroquad::input::is_mouse_button_down(macroquad::input::MouseButton::Left) && !shift_pressed {
+            for x in 0..cursor.size_modifier as u16 {
+                for y in 0..cursor.size_modifier as u16 {
+                    let mut fire = elements.fire.clone();
+                    fire.color = macroquad::color::Color::new(
+                        1.0,
+                        gen_range(0.2,0.8),
                         0.0,
-                        0.0,
-                        &elements.sand,
-                    ))));
+                        1.0
+                    );
+                    fire.weight = gen_range(-1.0,-3.0);
+                    if (y as f32) < SCREEN_HEIGHT && grid.grid[(pos_x as usize - (cursor.size_modifier as usize / 2)) + x as usize][(pos_y as usize - (cursor.size_modifier as usize / 2)) + y as usize] == None {
+                        grid.grid[(pos_x as usize - (cursor.size_modifier as usize / 2)) + x as usize][(pos_y as usize - (cursor.size_modifier as usize / 2)) + y as usize] =
+                            Some(Rc::new(RefCell::new(Pixel::new(
+                                0.0,
+                                0.0,
+                                fire.clone(),
+                            ))));
+                    }
+                }
             }
         }
         
         if macroquad::input::is_mouse_button_down(macroquad::input::MouseButton::Left) && shift_pressed {
-            if grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] == None {
-                grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] =
-                    Some(Rc::new(RefCell::new(Pixel::new(
-                        0.0,
-                        0.0,
-                        &elements.water,
-                    ))));
+            for x in 0..cursor.size_modifier as u16 {
+                for y in 0..cursor.size_modifier as u16 {
+                    if (y as f32) < SCREEN_HEIGHT && grid.grid[(pos_x as usize - (cursor.size_modifier as usize / 2)) + x as usize][(pos_y as usize - (cursor.size_modifier as usize / 2)) + y as usize] == None {
+                        grid.grid[(pos_x as usize - (cursor.size_modifier as usize / 2)) + x as usize][(pos_y as usize - (cursor.size_modifier as usize / 2)) + y as usize] =
+                            Some(Rc::new(RefCell::new(Pixel::new(
+                                0.0,
+                                0.0,
+                                elements.water.clone(),
+                            ))));
+                    }
+                }
+            }
+        }
+        
+        if macroquad::input::is_mouse_button_down(macroquad::input::MouseButton::Middle) && !shift_pressed {
+            for x in 0..cursor.size_modifier as u16 {
+                for y in 0..cursor.size_modifier as u16 {
+                    if (y as f32) < SCREEN_HEIGHT && grid.grid[(pos_x as usize - (cursor.size_modifier as usize / 2)) + x as usize][(pos_y as usize - (cursor.size_modifier as usize / 2)) + y as usize] == None {
+                        grid.grid[(pos_x as usize - (cursor.size_modifier as usize / 2)) + x as usize][(pos_y as usize - (cursor.size_modifier as usize / 2)) + y as usize] =
+                            Some(Rc::new(RefCell::new(Pixel::new(
+                                0.0,
+                                0.0,
+                                elements.metal.clone(),
+                            ))));
+                    }
+                }
             }
         }
 
-        if macroquad::input::is_mouse_button_down(macroquad::input::MouseButton::Middle) {
-            if grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] == None {
-                grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] =
-                    Some(Rc::new(RefCell::new(Pixel::new(
-                        0.0,
-                        0.0,
-                        &elements.metal,
-                    ))));
-            }
-        }
-
-        if macroquad::input::is_mouse_button_down(macroquad::input::MouseButton::Right) {
-            if grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] != None {
-                grid.grid[pos_x.floor() as usize][pos_y.floor() as usize] = None;
-                unsafe {
-                    PIXEL_AMOUNT -= 1;
+        if macroquad::input::is_mouse_button_down(macroquad::input::MouseButton::Right) && !shift_pressed {
+            for x in 0..cursor.size_modifier as u16 {
+                for y in 0..cursor.size_modifier as u16 {
+                    grid.grid[(pos_x as usize - (cursor.size_modifier as usize / 2)) + x as usize][(pos_y as usize - (cursor.size_modifier as usize / 2)) + y as usize] = None;
                 }
             }
         }
 
         grid.update(&settings);
         helpers::draw_info(&mut grid, &mut settings, &mut cursor, &elements);
-        helpers::handle_input(&mut grid, &mut settings);
+        helpers::handle_input(&mut grid, &mut settings, &mut cursor);
         next_frame().await;
     }
 }

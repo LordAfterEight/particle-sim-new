@@ -15,7 +15,7 @@ impl Cursor {
         Self {
             size_modifier: 1.0,
             position: macroquad::input::mouse_position(),
-            shape: CursorShapes::Circle
+            shape: CursorShapes::Rectangle
         }
     }
 
