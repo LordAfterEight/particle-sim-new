@@ -1,4 +1,4 @@
-use macroquad;
+use macroquad::rand::gen_range;
 
 #[derive(PartialEq, Clone)]
 pub enum StateOfMatter {
@@ -61,7 +61,7 @@ impl Elements {
 
         let fire = Element::new(            // --- Fire --- 
             "Fire",
-            macroquad::color::Color::new(1.0,0.5,0.0,1.0),
+            macroquad::color::Color::new(1.0,gen_range(0.3,0.5),0.0,1.0),
             -3.0,
             Some(Box::new(smoke.clone())),
             StateOfMatter::Gas,
@@ -80,7 +80,7 @@ impl Elements {
 
         let water = Element::new(           // --- Water ---
             "Water",
-            macroquad::color::Color::new(0.1,0.1,0.9, 0.75),
+            macroquad::color::Color::new(gen_range(0.55,0.6),gen_range(0.55,0.6),gen_range(0.9,1.0), 0.75),
             1.0,
             Some(Box::new(steam.clone())),
             StateOfMatter::Liquid,
@@ -107,7 +107,7 @@ impl Elements {
 
         let sand = Element::new(            //  --- Sand ---    TODO: Add lava 'SubElement'
             "Sand",
-            macroquad::color::Color::new(0.8,0.7,0.55,1.0),
+            macroquad::color::Color::new(1.0,gen_range(0.9,1.0),0.5,1.0),
             1.0,
             Some(Box::new(lava.clone())),
             StateOfMatter::Powder,

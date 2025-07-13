@@ -69,36 +69,59 @@ impl Pixel {
                 _                    => {}
             }
 
+            // --- Check Pixel above ---
+
             if let Some(pixel_rc_refcell) = &grid[x][(y as f32 - self.y_velocity) as usize] {
-                let pixel_borrowed = pixel_rc_refcell.borrow(); // Borrow the pixel to access its fields
-                let checked_element_name = &pixel_borrowed.element.name;
-                let checked_element_state = &pixel_borrowed.element.state;
 
-                // Now you can use checked_element_name or checked_element_state
-                // For example:
-                // if checked_element_name == "Water" {
-                //     // Do something if the pixel below is water
-                // }
-                // if *checked_element_state == StateOfMatter::Solid {
-                //    // Do something if the pixel below is solid
-                // }
-                
-                if checked_element_name == "Fire" && self.element.name == "Water" {
-                    self.element = self.element.sub_element.clone().unwrap();
-                }
+                let pixel = pixel_rc_refcell.try_borrow(); // Borrow the pixel to access its fields
+                if pixel.is_ok() {
+                    let pixel = pixel.unwrap();
+                    if pixel.element.name == "Fire" && self.element.name == "Water" {
+                        self.element = self.element.sub_element.clone().unwrap();
+                    }
 
-                if checked_element_name == "Sand" && self.element.name == "Water" {
-                    for i in 0..100 {
-                        if grid[x][y - i].is_none() {
-                            return(x, y - i -1);
+                    if pixel.element.name == "Sand" && self.element.name == "Water" {
+                        for i in 0..100 {
+                            if grid[x][y - i].is_none() {
+                                return(x, y - i -1);
+                            }
                         }
                     }
                 }
             }
 
+            // --- Check Pixel to the right ---
 
-            match self.element.state {          // State Of Matter specific behaviour
-                StateOfMatter::Powder => {          // --- Powder ---
+            if let Some(pixel_rc_refcell) = &grid[x + 1][y] {
+
+                let pixel = pixel_rc_refcell.try_borrow(); // Borrow the pixel to access its fields
+                if pixel.is_ok() {
+                    let pixel = pixel.unwrap();
+                    if pixel.element.name == "Fire" && self.element.name == "Water" {
+                        self.element = self.element.sub_element.clone().unwrap();
+                    }
+                }
+            }
+
+            // --- Check Pixel to the left ---
+
+            if let Some(pixel_rc_refcell) = &grid[x - 1][y] {
+
+                let pixel = pixel_rc_refcell.try_borrow(); // Borrow the pixel to access its fields
+                if pixel.is_ok() {
+                    let pixel = pixel.unwrap();
+                    if pixel.element.name == "Fire" && self.element.name == "Water" {
+                        self.element = self.element.sub_element.clone().unwrap();
+                    }
+                }
+            }
+
+            // --- State Of Matter Specific Behaviour
+
+            match self.element.state {
+
+                // --- Powder ---
+                StateOfMatter::Powder => {
                     if grid[position.0][position.1 + self.y_velocity as usize].is_none() {
                         return (x, y + self.y_velocity as usize);
                     } else { self.y_velocity = 1.0; }
@@ -120,13 +143,26 @@ impl Pixel {
                     }
                 },
                 
-                StateOfMatter::Liquid => {          // --- Liquid ---
+                // --- Liquid ---
+                StateOfMatter::Liquid => {
                     if grid[x][y + self.y_velocity as usize].is_none() {
                         return (x, y + self.y_velocity as usize);
                     }
+                    
+                    match random {
+                        1  => if  (x + 1) < size_x && (grid[x+1][y].is_none() && grid[x+1][y-1].is_none()) {
+                            return (x+1, y);
+                        },
+                        -1 => if (x - 1) > 0 && (grid[x-1][y].is_none() && grid[x-1][y-1].is_none()) {
+                            return (x-1, y);
+                        },
+                        0 => return (x, y),
+                        _ => return (x, y)
+                    }
                 },
 
-                StateOfMatter::Gas => {          // --- Gas ---
+                // --- Gas ---
+                StateOfMatter::Gas => {
                     if grid[x][(y as f32 + self.y_velocity) as usize].is_none() {
                         let (mut ret_x, ret_y) = (x,y);
                         match random {
