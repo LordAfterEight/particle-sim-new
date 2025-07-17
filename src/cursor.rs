@@ -13,7 +13,7 @@ pub struct Cursor {
 impl Cursor {
     pub fn init() -> Self {
         Self {
-            size_modifier: 1.0,
+            size_modifier: 8.0,
             position: macroquad::input::mouse_position(),
             shape: CursorShapes::Rectangle
         }

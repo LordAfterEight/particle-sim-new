@@ -25,7 +25,9 @@ pub struct Elements {
     pub metal: Element,
     pub water: Element,
     pub steam: Element,
-    pub lava: Element
+    pub lava: Element,
+    pub burning_coal: Element,
+    pub coal: Element,
 }
 
 impl Element {
@@ -56,7 +58,7 @@ impl Elements {
             -1.0,
             None,
             StateOfMatter::Gas,
-            u16::MAX //30
+            30
         );
 
         let fire = Element::new(            // --- Fire --- 
@@ -80,7 +82,7 @@ impl Elements {
 
         let water = Element::new(           // --- Water ---
             "Water",
-            macroquad::color::Color::new(gen_range(0.55,0.6),gen_range(0.55,0.6),gen_range(0.9,1.0), 0.75),
+            macroquad::color::Color::new(gen_range(0.25,0.3),gen_range(0.25,0.3),gen_range(0.7,0.75), 0.75),
             1.0,
             Some(Box::new(steam.clone())),
             StateOfMatter::Liquid,
@@ -113,6 +115,24 @@ impl Elements {
             StateOfMatter::Powder,
             u16::MAX
         );
+        
+        let burning_coal = Element::new(            // --- Burning Coal ---
+            "Coal",
+            macroquad::color::Color::new(gen_range(0.4,0.5),gen_range(0.1,0.13),gen_range(0.1,0.13),1.0),
+            1.0,
+            Some(Box::new(fire.clone())),
+            StateOfMatter::Powder,
+            gen_range(10,20),
+        );
+        
+        let coal = Element::new(            // --- Coal ---
+            "Coal",
+            macroquad::color::Color::new(gen_range(0.1, 0.13),gen_range(0.1,0.13),gen_range(0.1,0.13),1.0),
+            1.0,
+            Some(Box::new(burning_coal.clone())),
+            StateOfMatter::Powder,
+            u16::MAX
+        );
 
         Self {
             fire,
@@ -122,6 +142,8 @@ impl Elements {
             water,
             steam,
             lava,
+            burning_coal,
+            coal,
         }
     }
 }
