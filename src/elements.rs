@@ -122,7 +122,7 @@ impl Elements {
             1.0,
             Some(Box::new(fire.clone())),
             StateOfMatter::Powder,
-            gen_range(10,20),
+            gen_range(2,10),
         );
         
         let coal = Element::new(            // --- Coal ---

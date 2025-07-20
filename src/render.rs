@@ -74,142 +74,138 @@ impl Pixel {
                 _ => {}
             }
 
-            // --- Check Pixel above ---
+            // --- Check Pixel above, to the left and right ---
 
-            if let Some(pixel_rc_refcell) = &grid[x][(y as f32 - self.y_velocity) as usize] {
-                let pixel = pixel_rc_refcell.try_borrow(); // Borrow the pixel to access its fields
-                if pixel.is_ok() {
-                    let pixel = pixel.unwrap();
-                    if pixel.element.name == "Water" && self.element.name == "Burning Coal" {
-                        self.element.color = macroquad::color::Color::new(
-                            gen_range(0.4, 0.43),
-                            gen_range(0.4, 0.43),
-                            gen_range(0.4, 0.43),
-                            1.0,
-                        );
-                        self.element.lifetime = u16::MAX;
-                    }
-                    if pixel.element.name == "Fire" && self.element.name == "Water" {
-                        self.element = self.element.sub_element.clone().unwrap();
-                    }
+            if let Some(pixel_rc_refcell_r) = &grid[x + 1][y] {
+                if let Some(pixel_rc_refcell_l) = &grid[x - 1][y] {
+                    if let Some(pixel_rc_refcell_u) = &grid[x][(y as f32 - self.y_velocity) as usize] {
+                        let pixel_r = pixel_rc_refcell_r.try_borrow(); // Borrow the pixel to access its fields
+                        let pixel_l = pixel_rc_refcell_l.try_borrow(); // Borrow the pixel to access its fields
+                        let pixel_u = pixel_rc_refcell_u.try_borrow(); // Borrow the pixel to access its fields
+                        if pixel_r.is_ok() {
+                            let pixel_r = pixel_r.unwrap();
 
-                    if pixel.element.state == StateOfMatter::Powder
-                        && self.element.state == StateOfMatter::Liquid
-                    {
-                        for i in 0..100 {
-                            if grid[x][y - i].is_none() {
-                                return (x, y - i - 1);
+                            if pixel_r.element.name == "Water" && self.element.name == "Burning Coal" {
+                                self.element.color = macroquad::color::Color::new(
+                                    gen_range(0.4, 0.43),
+                                    gen_range(0.4, 0.43),
+                                    gen_range(0.4, 0.43),
+                                    1.0,
+                                );
+                                self.element.lifetime = u16::MAX;
+                            }
+
+                            if pixel_r.element.name == "Fire" && self.element.name == "Water" {
+                                self.element = self.element.sub_element.clone().unwrap();
+                            }
+
+                            if pixel_r.element.name == "Fire" && self.element.name == "Coal" {
+                                self.element.color = macroquad::color::Color::new(
+                                    gen_range(0.2, 0.3),
+                                    gen_range(0.1, 0.13),
+                                    gen_range(0.1, 0.13),
+                                    1.0,
+                                );
+                                self.element.lifetime = gen_range(20, 60);
+                            }
+
+                            if pixel_r.element.name == "Burning Coal" && self.element.name == "Coal" {
+                                let random_number = gen_range(1, 2);
+                                if random_number == 1 {
+                                    self.element = self.element.sub_element.clone().unwrap();
+                                }
                             }
                         }
-                    }
+                        if pixel_l.is_ok() {
+                            let pixel_l = pixel_l.unwrap();
 
-                    if pixel.element.state == StateOfMatter::Powder
-                        && self.element.state == StateOfMatter::Gas
-                    {
-                        for i in 0..100 {
-                            if grid[x][y - i].is_none() {
-                                return (x, y - i - 1);
+                            if pixel_l.element.name == "Water" && self.element.name == "Burning Coal" {
+                                self.element.color = macroquad::color::Color::new(
+                                    gen_range(0.4, 0.43),
+                                    gen_range(0.4, 0.43),
+                                    gen_range(0.4, 0.43),
+                                    1.0,
+                                );
+                                self.element.lifetime = u16::MAX;
+                            }
+
+                            if pixel_l.element.name == "Fire" && self.element.name == "Water" {
+                                self.element = self.element.sub_element.clone().unwrap();
+                            }
+
+                            if pixel_l.element.name == "Fire" && self.element.name == "Coal" {
+                                self.element.color = macroquad::color::Color::new(
+                                    gen_range(0.2, 0.3),
+                                    gen_range(0.1, 0.13),
+                                    gen_range(0.1, 0.13),
+                                    1.0,
+                                );
+                                self.element.lifetime = gen_range(20, 60);
+                            }
+
+                            if pixel_l.element.name == "Burning Coal" && self.element.name == "Coal" {
+                                let random_number = gen_range(1, 2);
+                                if random_number == 1 {
+                                    self.element = self.element.sub_element.clone().unwrap();
+                                }
                             }
                         }
-                    }
+                        if pixel_u.is_ok() {
+                            let pixel_u = pixel_u.unwrap();
+                            if pixel_u.element.name == "Water" && self.element.name == "Burning Coal" {
+                                self.element.color = macroquad::color::Color::new(
+                                    gen_range(0.4, 0.43),
+                                    gen_range(0.4, 0.43),
+                                    gen_range(0.4, 0.43),
+                                    1.0,
+                                );
+                                self.element.lifetime = u16::MAX;
+                            }
+                            if pixel_u.element.name == "Fire" && self.element.name == "Water" {
+                                self.element = self.element.sub_element.clone().unwrap();
+                            }
 
-                    if pixel.element.name == "Fire" && self.element.name == "Coal" {
-                        self.element.color = macroquad::color::Color::new(
-                            gen_range(0.2, 0.3),
-                            gen_range(0.1, 0.13),
-                            gen_range(0.1, 0.13),
-                            1.0,
-                        );
-                        self.element.lifetime = gen_range(20, 60);
-                    }
+                            if pixel_u.element.state == StateOfMatter::Powder &&
+                                ((self.element.state == StateOfMatter::Gas) ||
+                                (self.element.state == StateOfMatter::Liquid))
+                            {
+                                for i in 0..100 {
+                                    if grid[x][y - i].is_none() {
+                                        return (x, y - i - 1);
+                                    }
+                                }
+                            }
 
-                    if pixel.element.name == "Burning Coal" && self.element.name == "Coal" {
-                        let random_number = gen_range(1, 3);
-                        if random_number == 1 {
-                            self.element = self.element.sub_element.clone().unwrap();
+                            if pixel_u.element.name == "Fire" && self.element.name == "Coal" {
+                                self.element.color = macroquad::color::Color::new(
+                                    gen_range(0.2, 0.3),
+                                    gen_range(0.1, 0.13),
+                                    gen_range(0.1, 0.13),
+                                    1.0,
+                                );
+                                self.element.lifetime = gen_range(20, 60);
+                            }
+
+                            if pixel_u.element.name == "Burning Coal" && self.element.name == "Coal" {
+                                let random_number = gen_range(1, 2);
+                                if random_number == 1 {
+                                    self.element = self.element.sub_element.clone().unwrap();
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            // --- Check Pixel to the right ---
+            // --- Element Specific Behaviour
 
-            if let Some(pixel_rc_refcell) = &grid[x + 1][y] {
-                let pixel = pixel_rc_refcell.try_borrow(); // Borrow the pixel to access its fields
-                if pixel.is_ok() {
-                    let pixel = pixel.unwrap();
-
-                    if pixel.element.name == "Water" && self.element.name == "Burning Coal" {
-                        self.element.color = macroquad::color::Color::new(
-                            gen_range(0.4, 0.43),
-                            gen_range(0.4, 0.43),
-                            gen_range(0.4, 0.43),
-                            1.0,
-                        );
-                        self.element.lifetime = u16::MAX;
-                    }
-
-                    if pixel.element.name == "Fire" && self.element.name == "Water" {
-                        self.element = self.element.sub_element.clone().unwrap();
-                    }
-
-                    if pixel.element.name == "Fire" && self.element.name == "Coal" {
-                        self.element.color = macroquad::color::Color::new(
-                            gen_range(0.2, 0.3),
-                            gen_range(0.1, 0.13),
-                            gen_range(0.1, 0.13),
-                            1.0,
-                        );
-                        self.element.lifetime = gen_range(40, 200);
-                    }
-
-                    if pixel.element.name == "Burning Coal" && self.element.name == "Coal" {
-                        let random_number = gen_range(1, 3);
-                        if random_number == 1 {
-                            self.element = self.element.sub_element.clone().unwrap();
-                        }
-                    }
-                }
-            }
-
-            // --- Check Pixel to the left ---
-
-            if let Some(pixel_rc_refcell) = &grid[x - 1][y] {
-                let pixel = pixel_rc_refcell.try_borrow(); // Borrow the pixel to access its fields
-                if pixel.is_ok() {
-                    let pixel = pixel.unwrap();
-
-                    if pixel.element.name == "Water" && self.element.name == "Burning Coal" {
-                        self.element.color = macroquad::color::Color::new(
-                            gen_range(0.4, 0.43),
-                            gen_range(0.4, 0.43),
-                            gen_range(0.4, 0.43),
-                            1.0,
-                        );
-                        self.element.lifetime = u16::MAX;
-                    }
-
-                    if pixel.element.name == "Fire" && self.element.name == "Water" {
-                        self.element = self.element.sub_element.clone().unwrap();
-                    }
-
-                    if pixel.element.name == "Fire" && self.element.name == "Coal" {
-                        self.element.color = macroquad::color::Color::new(
-                            gen_range(0.2, 0.3),
-                            gen_range(0.1, 0.13),
-                            gen_range(0.1, 0.13),
-                            1.0,
-                        );
-                        self.element.lifetime = gen_range(40, 200);
-                    }
-
-                    if pixel.element.name == "Burning Coal" && self.element.name == "Coal" {
-                        let random_number = gen_range(1, 3);
-                        if random_number == 1 {
-                            self.element = self.element.sub_element.clone().unwrap();
-                        }
-                    }
-                }
+            if self.element.name == "Fire" {
+                self.element.color = macroquad::color::Color::new(
+                    1.0,
+                    self.element.lifetime as f32 / 200.0 * 3.0,
+                    0.0,
+                    1.0
+                );
             }
 
             // --- State Of Matter Specific Behaviour
